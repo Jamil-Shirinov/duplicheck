@@ -39,7 +39,7 @@ Looked at 15 files in demo_downloads.
 Then, if you would like to try it on a real folder:
 
 ```
-python near_duplicates.py ~/<folder-name>
+python near_duplicates.py ~/<path/to/folder>
 ```
 
 duplicheck only ever prints. It never renames or deletes anything.
