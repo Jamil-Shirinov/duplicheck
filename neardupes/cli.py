@@ -47,7 +47,7 @@ def main(argv = None):
     folder = os.path.expanduser(args.folder)
 
     if not os.path.isdir(folder):
-        print("No such folder found.", file = sys.stderr)
+        print(f"No such folder: {folder}", file = sys.stderr)
         return 1
     
     if not 0 < args.threshold <= 1:
