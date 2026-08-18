@@ -30,6 +30,15 @@ EXTENSION_ALIASES = [
 
 
 
+def kind_key(ext):
+    """Which pile an extension belongs in. jpg and jpeg share one."""
+    for family in EXTENSION_ALIASES:
+        if ext in family:
+            return min(family)
+    return ext
+
+
+
 def same_kind(ext_a, ext_b):
     if ext_a == ext_b:
         return True
@@ -60,7 +69,7 @@ def score(file_a, file_b):
     if not same_kind(file_a.ext, file_b.ext):
         return 0.0
 
-    name = names.similarity(file_a.stem, file_b.stem)
+    name = names.similarity(file_a.stem, file_b.stem, NAME_FLOOR)
     if name < NAME_FLOOR:
         return 0.0
 
@@ -81,18 +90,30 @@ def group_files(files, threshold):
     # Sorting first means the same folder always prints the exact same way
     files = sorted(files, key = lambda f: f.name.lower())
 
+    # Files of different types can never match, so sort them into piles
+    # by type and work one pile at a time. Otherwise every file gets
+    # compared against every other one, which on a real Downloads folder
+    # is millions of comparisons that were never going to match anyway.
+    piles = {}
+    for info in files:
+        piles.setdefault(kind_key(info.ext), []).append(info)
+
     groups = []
-    for curr in files:
-        for group in groups:
-            if any(score(curr, member) >= threshold for member in group):
-                group.append(curr)
-                break
-        else:
-            groups.append([curr])
+    for pile in piles.values():
+        pile_groups = []
+        for curr in pile:
+            for group in pile_groups:
+                if any(score(curr, member) >= threshold for member in group):
+                    group.append(curr)
+                    break
+            else:
+                pile_groups.append([curr])
+        groups.extend(pile_groups)
 
     # A group of one is just a single file
     groups = [g for g in groups if len(g) > 1]
-    groups.sort(key = len, reverse = True)
+    # Biggest groups first, then by name so the order never wobbles.
+    groups.sort(key = lambda g: (-len(g), g[0].name.lower()))
     return groups
 
 

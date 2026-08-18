@@ -58,10 +58,14 @@ def print_group(group, root, number, total):
 
 
 
-def print_report(groups, file_count, root):
+def print_report(groups, file_count, total_found, root):
 
     where = os.path.basename(os.path.abspath(root)) or root
-    print(f"Looked at {file_count} files in {where}.")
+    if file_count < total_found:
+        print(f"Looked at the {file_count} newest of {total_found} files in {where}.")
+        print("Use --limit 0 to check all of them.")
+    else:
+        print(f"Looked at {file_count} files in {where}.")
     print()
 
     if not groups:

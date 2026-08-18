@@ -50,7 +50,10 @@ Options:
 -r, --recursive    include subfolders
 -t, --threshold    how sure to be before grouping, 0 to 1 (default 0.65)
 --min-size         skip files under this many bytes
+--limit            only check the N newest files (default 500, 0 for all)
 ```
+
+It only checks the 500 newest files by default. Every file has to be compared against every other one, so a big folder gets slow fast - a Download folder with 2,000+ files takes about a minute and a half and resulsts in a rather messy report. The newest 500 takes about 3 seconds. Pass `--limit 0` if you really want all of them.
 
 ## How it works
 

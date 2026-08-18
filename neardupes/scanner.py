@@ -6,11 +6,13 @@ from urllib.parse import urlparse
 # Bunch of junk
 SKIP_NAMES = {"desktop.ini", "thumbs.db", ".ds_store"}
 
+NOT_CHECKED = object()
+
 
 
 class FileInfo:
 
-    def __init__(self, path, size, mtime, origin = None):
+    def __init__(self, path, size, mtime, origin = NOT_CHECKED):
         self.path = path
         self.name = os.path.basename(path)
         stem, ext = os.path.splitext(self.name)
@@ -18,7 +20,14 @@ class FileInfo:
         self.ext = ext.lower().lstrip(".")
         self.size = size
         self.mtime = mtime
-        self.origin = origin
+        self._origin = origin
+
+    @property
+    def origin(self):
+        """Site the file came from, or None."""
+        if self._origin is NOT_CHECKED:
+            self._origin = read_origin(self.path)
+        return self._origin
 
     def __repr__(self):
         return f"FileInfo({self.name})"
@@ -51,6 +60,15 @@ def scan(folder, recursive = False, min_size = 1):
 
 
 
+def newest_first(files, limit):
+    """Keep only the `limit` files that were saved most recently."""
+    files = sorted(files, key = lambda f: f.mtime, reverse = True)
+    if limit > 0:
+        files = files[:limit]
+    return files
+
+
+
 def describe(path):
     """Return None if there is an OSError"""
     try:
@@ -58,7 +76,7 @@ def describe(path):
     except OSError:
         return None
     
-    return FileInfo(path, stats.st_size, stats.st_mtime, read_origin(path))
+    return FileInfo(path, stats.st_size, stats.st_mtime)
 
 
 

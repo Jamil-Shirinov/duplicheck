@@ -1,7 +1,7 @@
 import time
 import unittest
 from neardupes import grouper
-from neardupes.scanner import FileInfo
+from neardupes.scanner import FileInfo, newest_first
 
 NOW = time.time()
 THRESHOLD = 0.65
@@ -53,6 +53,23 @@ class ScoreHelpersTest(unittest.TestCase):
         day = grouper.SECONDS_PER_DAY
         self.assertEqual(grouper.time_score(0, 0), 1.0)
         self.assertEqual(grouper.time_score(0, day *365), 0.0)
+
+
+class LimitTest(unittest.TestCase):
+
+    def test_keeps_the_newest_and_drops_the_rest(self):
+        files = [make(f"file{n}.pdf", days_ago = n) for n in range(10)]
+        kept = newest_first(files, 3)
+        self.assertEqual([f.name for f in kept], ["file0.pdf", "file1.pdf", "file2.pdf"])
+
+    def test_limit_of_zero_keeps_everything(self):
+        files = [make(f"file{n}.pdf", days_ago = n) for n in range(10)]
+        self.assertEqual(len(newest_first(files, 0)), 10)
+
+    def test_limit_bigger_than_the_folder_is_fine(self):
+        files = [make("a.pdf"), make("b.pdf")]
+        self.assertEqual(len(newest_first(files, 500)), 2)
+
 
 
 class GroupTest(unittest.TestCase):
