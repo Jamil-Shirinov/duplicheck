@@ -1,5 +1,7 @@
 # duplicheck
 
+<b>duplicheck</b> is a tool to analyze a directory for possible duplicate files.
+
 Most duplicate finders hash every file, so they only ever report exact copies. That misses the actual mess commonly found in Downloads folders:
 
 ```
